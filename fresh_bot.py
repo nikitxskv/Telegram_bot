@@ -56,7 +56,6 @@ def main():
 
 def echo(bot, update_id):
 
-
     for update in bot.getUpdates(offset=update_id, timeout=10):
         chat_id = update.message.chat_id
         update_id = update.update_id + 1
