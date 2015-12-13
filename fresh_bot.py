@@ -17,6 +17,11 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 helptext = 'help:\n\'songlist\' - show new songs\n\'update\' - update songlist'
 
+reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', '1', '2'],
+                                             ['3', '4', '5', '6', '7', '8'],
+                                             ['9', '10', '11', '12', '13', '14'],
+                                             ['15', '16', '17', '18', '19', '20']])
+
 
 def main():
     # Telegram Bot Authorization Token
@@ -50,6 +55,7 @@ def main():
 
 
 def echo(bot, update_id):
+
 
     for update in bot.getUpdates(offset=update_id, timeout=10):
         chat_id = update.message.chat_id
@@ -86,7 +92,7 @@ def echo(bot, update_id):
                 else:
                     bot.sendMessage(chat_id=chat_id, text='incorrect number')
             else:
-                bot.sendMessage(chat_id=chat_id, text=helptext)
+                bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup)
     return update_id
 
 
