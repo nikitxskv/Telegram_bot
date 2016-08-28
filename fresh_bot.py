@@ -16,7 +16,7 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 helptext = 'help:\n\'songlist\' - show new songs\n\'update\' - update songlist'
 
-print dir(telegram)
+print dir(telegram.Telegram)
 
 reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
