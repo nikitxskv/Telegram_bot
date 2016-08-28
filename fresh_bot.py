@@ -4,12 +4,10 @@ import sys
 import ssl
 import wget
 import pickle
-import random
 import logging
 import telegram
 import requests
 import collections
-from lxml import html
 from time import sleep
 from urllib2 import URLError
 from os import remove, renames
@@ -172,4 +170,4 @@ def get_song(song_index):
 if __name__ == '__main__':
     main()
 
-    
+
