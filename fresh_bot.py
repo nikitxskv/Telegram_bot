@@ -8,6 +8,7 @@ import random
 import logging
 import telegram
 import requests
+import collections
 from lxml import html
 from time import sleep
 from urllib2 import URLError
@@ -23,6 +24,8 @@ reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', '1', '2'],
                                               '12', '13', '14'],
                                              ['15', '16', '17',
                                               '18', '19', '20']])
+default_songs_count = 20
+domain = 'oamusic'
 
 
 def main():
@@ -117,54 +120,34 @@ def get_songlist():
 def update_song_list():
     ''' Обновляет список и загружает его на диск. '''
 
-    songs, page_number = [], 1
-    while True:
-        try:
-            page = html.fromstring(requests.post('https://vk.com/oamusic',
-                                                 timeout=5).text)
-            break
-        except (ReadTimeout, ConnectTimeout, SSLError, ssl.SSLError) as e:
-            print(e)
-    post_blocks = page.xpath('//div[@id="page_wall_posts"]' +
-                             '/div[@class="post all own"]')
-    while True:
-        for post_block in post_blocks:
-            audio_info = post_block.xpath('.//div[@class="wall_text"]' +
-                                          '//div[@class="post_media ' +
-                                          'clear_fix wall_audio"]/div')
-            if len(audio_info) == 1:
-                arr = []
-                # Достаем название песни
-                song_info = post_block.xpath('.//div[@class="area clear_fix"' +
-                                             ']/table')[0]
-                artist = song_info.xpath('.//div[@class="title_wrap fl_l"]' +
-                                         '/b')[0].text_content()
-                title = song_info.xpath('.//div[@class="title_wrap fl_l"]/sp' +
-                                        'an[@class="title"]')[0].text_content()
-                # Достаем ссылку для скачивания и id поста
-                href = song_info.xpath('.//input')[0].attrib['value']
-                song_id = post_block.attrib['id']
-                # Смотрим, что бы аудио не повторялись и добавляем их в список
-                if not songs or songs[-1][1] != href:
-                    arr.append(artist + ' - ' + title[:-1])
-                    arr.append(href)
-                    songs.append(arr)
-                if len(songs) == 20:
-                    break
-        if len(songs) == 20:
-            break
-        post = {'act': 'get_wall', 'al': '1', 'fixed': '107318', 'type': 'own',
-                'offset': str(9 * page_number), 'owner_id': '-24807991'}
-        while True:
+    urls, titles, offset = [], [], 0
+    fresh = True
+    while fresh:
+        response = requests.get('https://api.vk.com/method/wall.get',
+                                params={
+                                    'domain': domain,
+                                    'count': 50,
+                                    'offset': offset
+                                })
+        offset += 50
+        for post in response.json()['response']:
             try:
-                r = requests.post('https://vk.com/al_wall.php', data=post,
-                                  timeout=5).text.replace('<>', '')[4:]
-                break
-            except (ReadTimeout, ConnectTimeout, SSLError, ssl.SSLError) as e:
-                print(e)
-        post_blocks = html.fromstring(r).xpath('./div[@class="post all own"]')
-        page_number += 1
-
+                counter = collections.Counter()
+                for attachment in post['attachments']:
+                    counter[attachment['type']] += 1
+                    if attachment['type'] == 'audio':
+                        audio = attachment['audio']
+                if counter['audio'] == 1:
+                    if len(urls) == default_songs_count:
+                        fresh = False
+                        break
+                    urls.append(audio['url'])
+                    titles.append(audio['artist'] + ' - ' + audio['title'])
+                    # print('{} songs are collect.'.format(len(urls)), end='\r')
+            except (TypeError, AttributeError) as e:
+                pass
+    songs = zip(titles, urls)
+    print songs
     with open('songlist.pkl', 'wb') as f:
         pickle.dump(songs, f)
     return 'Songs were updated.'
@@ -178,7 +161,7 @@ def get_song(song_index):
         with open('songlist.pkl', 'rb') as f:
             songs = pickle.load(f)
             url = songs[song_index - 1][1]
-        song_name = wget.download(url, bar=None)
+        song_name = wget.download(url)
         song_name = song_name.encode('utf-8')
         song = open(song_name)
         return song
