@@ -64,7 +64,8 @@ def echo(bot, update_id):
         update_id = update.update_id + 1
         message = update.message.text
         with open('user_log.txt', 'a+') as f:
-            f.write(update.message.chat['first_name'] + ': ' + update.message.text + '\n')
+            s = update.message.chat['first_name'].encode('utf-8') + ': ' + update.message.text.encode('utf-8') + '\n'
+            f.write(s)
 
         if message:
             if message.lower() == 'songlist':
