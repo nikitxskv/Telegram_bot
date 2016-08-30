@@ -16,8 +16,6 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 helptext = 'help:\n\'songlist\' - show new songs\n\'update\' - update songlist'
 
-print dir(telegram.Telegram)
-
 reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
                                              ['9', '10', '11',
@@ -110,7 +108,7 @@ def get_songlist():
         with open('songlist.pkl', 'rb') as f:
             songs = pickle.load(f)
         for i, song in enumerate(songs):
-            songlist += '{}: {}\n'.format(i + 1, song[0])
+            songlist += '{}: {}\n'.format(i + 1, song[0].encode('utf-8'))
         songlist += '\nIf you want to listen - type the number of the song'
         return songlist
     except IOError:
@@ -147,7 +145,6 @@ def update_song_list():
             except (TypeError, AttributeError) as e:
                 pass
     songs = zip(titles, urls)
-    print songs
     with open('songlist.pkl', 'wb') as f:
         pickle.dump(songs, f)
     return 'Songs were updated.'
@@ -161,7 +158,7 @@ def get_song(song_index):
         with open('songlist.pkl', 'rb') as f:
             songs = pickle.load(f)
             url = songs[song_index - 1][1]
-        song_name = wget.download(url)
+        song_name = wget.download(url, bar=None)
         song_name = song_name.encode('utf-8')
         song = open(song_name)
         return song
