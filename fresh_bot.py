@@ -7,6 +7,7 @@ import pickle
 import logging
 import telegram
 import requests
+import threading
 import collections
 from time import sleep
 from urllib2 import URLError
@@ -16,7 +17,7 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 helptext = 'help:\n\'songlist\' - show new songs\n\'update\' - update songlist'
 
-reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', '1', '2'],
+reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', 'all', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
                                              ['9', '10', '11',
                                               '12', '13', '14'],
@@ -84,22 +85,32 @@ def echo(bot, update_id):
                 if 0 < int(message) < 21:
                     bot.sendMessage(chat_id=chat_id,
                                     text='wait a second..')
-                    song = get_song(int(message))
-                    if not song:
-                        bot.sendMessage(chat_id=chat_id,
-                                        text='please, update songlist')
-                    else:
-                        bot.sendAudio(chat_id=chat_id, audio=song)
-                        song_name = song.name
-                        song.close()
-                        remove(song_name)
+                    d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
+                    d.start()
+                    # send_song(bot, chat_id, int(message))
                 else:
                     bot.sendMessage(chat_id=chat_id, text='incorrect number')
+            elif message.lower() == 'all':
+                bot.sendMessage(chat_id=chat_id,
+                                    text='No')
+                # d = threading.Thread(target=send_song, args=(bot, chat_id, -1))
+                # d.start()
             else:
                 bot.sendMessage(chat_id=chat_id, text=helptext,
                                 reply_markup=reply_markup)
     return update_id
 
+
+def send_song(bot, chat_id, song_id):
+    song = get_song(song_id)
+    if not song:
+        bot.sendMessage(chat_id=chat_id,
+                        text='please, update songlist')
+    else:
+        bot.sendAudio(chat_id=chat_id, audio=song)
+        song_name = song.name
+        song.close()
+        remove(song_name)
 
 def get_songlist():
     ''' Загружает список песен из файла и
@@ -159,6 +170,7 @@ def get_song(song_index):
     try:
         with open('songlist.pkl', 'rb') as f:
             songs = pickle.load(f)
+            # print songs
             url = songs[song_index - 1][1]
         song_name = wget.download(url, bar=None)
         song_name = song_name.encode('utf-8')
