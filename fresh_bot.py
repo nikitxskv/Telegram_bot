@@ -17,7 +17,7 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 helptext = 'help:\n\'songlist\' - show new songs\n\'update\' - update songlist'
 
-reply_markup = telegram.ReplyKeyboardMarkup([['songlist', 'update', 'all', '1', '2'],
+reply_markup = telegram.ReplyKeyboardMarkup([['Songlist', 'Search', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
                                              ['9', '10', '11',
                                               '12', '13', '14'],
@@ -70,17 +70,13 @@ def echo(bot, update_id):
 
         if message:
             if message.lower() == 'songlist':
+                update_song_list()
                 songlist = get_songlist()
                 if songlist is None:
                     bot.sendMessage(chat_id=chat_id,
                                     text='please, update songlist')
                 else:
                     bot.sendMessage(chat_id=chat_id, text=songlist)
-            elif message.lower() == 'update':
-                message = update_song_list()
-                bot.sendMessage(chat_id=chat_id, text=message)
-                songlist = get_songlist()
-                bot.sendMessage(chat_id=chat_id, text=songlist)
             elif message.isdigit():
                 if 0 < int(message) < 21:
                     bot.sendMessage(chat_id=chat_id,
