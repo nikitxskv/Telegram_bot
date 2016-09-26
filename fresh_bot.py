@@ -15,7 +15,7 @@ from os import remove, renames
 from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 
-helptext = 'help:\n\'songlist\' - show new songs\n\'update\' - update songlist'
+helptext = 'help:\n\'songlist\' - show new songs'
 
 reply_markup = telegram.ReplyKeyboardMarkup([['Songlist', 'Search', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
@@ -69,8 +69,6 @@ def echo(bot, update_id):
             f.write(s)
 
         if message:
-            if message.lower() == u'сломайся':
-                print message.lower()[100]
             if message.lower() == 'songlist':
                 update_song_list()
                 songlist = get_songlist()
@@ -170,7 +168,7 @@ def get_song(song_index):
             songs = pickle.load(f)
             # print songs
             url = songs[song_index - 1][1]
-        song_name = wget.download(url, bar=None)
+        song_name = wget.download(url)
         song_name = song_name.encode('utf-8')
         song = open(song_name)
         return song
