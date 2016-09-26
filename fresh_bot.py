@@ -69,6 +69,8 @@ def echo(bot, update_id):
             f.write(s)
 
         if message:
+            if message.lower() == u'сломайся':
+                print message.lower()[100]
             if message.lower() == 'songlist':
                 update_song_list()
                 songlist = get_songlist()
