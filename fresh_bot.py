@@ -110,7 +110,7 @@ def get_songlist():
         return None
 
 
-def update_song_list(audio_place, query):
+def update_song_list(audio_place, query='famous'):
     ''' Обновляет список и загружает его на диск. '''
     if audio_place == "songlist":
         urls, titles, offset = [], [], 0
