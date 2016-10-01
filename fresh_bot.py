@@ -68,8 +68,8 @@ def echo(bot, update_id):
         with open('user_log.txt', 'a+') as f:
             s = update.message.chat['first_name'].encode('utf-8') + ': ' + update.message.text.encode('utf-8') + '\n'
             f.write(s)
-
         if message:
+            print message.lower()
             if message.lower() in ["songlist", "my"]:
                 update_song_list(message.lower())
                 bot.sendMessage(chat_id=chat_id, text=get_songlist(), reply_markup=reply_markup_1)
@@ -105,7 +105,7 @@ def get_songlist():
             songs = pickle.load(f)
         for i, song in enumerate(songs):
             songlist += '{}: {}\n'.format(i + 1, song[0].encode('utf-8'))
-        return songlist
+        return songlist if songlist else "No results"
     except IOError:
         return None
 
@@ -162,12 +162,16 @@ def update_song_list(audio_place, query):
                                     'search_own': 1,
                                     'count': 20,
                                     'offset': offset,
-                                    'access_token': vk_api_token
+                                    'access_token': vk_api_token,
+                                    'v': 3
                                 })
         for audio in response.json()["response"][1:]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
+    # if  titles:
     songs = zip(titles, urls)
+    # else:
+    #     songs = zip(["No results"], [""])
     with open('songlist.pkl', 'wb') as f:
         pickle.dump(songs, f)
     return 'Songs were updated.'
