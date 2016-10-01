@@ -14,18 +14,22 @@ from urllib2 import URLError
 from os import remove, renames
 from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
+vk_api_token = "53925a1a142a9c226aa5e497c86a3043d6583d1fb649ca8b4adf8686fc31fd7788462f747368a63878a1e"
+vk_user_id = 8348483
 
 helptext = 'help:\n\'songlist\' - show new songs'
 
-reply_markup = telegram.ReplyKeyboardMarkup([['Songlist', 'Search', '1', '2'],
+reply_markup_1 = telegram.ReplyKeyboardMarkup([['Menu', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
-                                             ['9', '10', '11',
-                                              '12', '13', '14'],
-                                             ['15', '16', '17',
-                                              '18', '19', '20']])
+                                             ['9', '10', '11', '12', '13', '14'],
+                                             ['15', '16', '17', '18', '19', '20']])
+
+reply_markup_2 = telegram.ReplyKeyboardMarkup([['Songlist', 'My', 'Search']])
+
 default_songs_count = 20
 domain = 'oamusic'
 
+offset = {}
 
 def main():
     # Telegram Bot Authorization Token
@@ -38,8 +42,7 @@ def main():
     except IndexError:
         update_id = None
 
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     while True:
         try:
@@ -69,39 +72,24 @@ def echo(bot, update_id):
             f.write(s)
 
         if message:
-            if message.lower() == 'songlist':
-                update_song_list()
-                songlist = get_songlist()
-                if songlist is None:
-                    bot.sendMessage(chat_id=chat_id,
-                                    text='please, update songlist')
-                else:
-                    bot.sendMessage(chat_id=chat_id, text=songlist)
-            elif message.isdigit():
-                if 0 < int(message) < 21:
-                    bot.sendMessage(chat_id=chat_id,
-                                    text='wait a second..')
-                    d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
-                    d.start()
-                    # send_song(bot, chat_id, int(message))
-                else:
-                    bot.sendMessage(chat_id=chat_id, text='incorrect number')
-            elif message.lower() == 'all':
-                bot.sendMessage(chat_id=chat_id,
-                                    text='No')
-                # d = threading.Thread(target=send_song, args=(bot, chat_id, -1))
-                # d.start()
+            if message.lower() in ["songlist", "my"]:
+                update_song_list(message.lower())
+                bot.sendMessage(chat_id=chat_id, text=get_songlist(), reply_markup=reply_markup_1)
+            elif message.isdigit() and 0 < int(message) < 21:
+                bot.sendMessage(chat_id=chat_id, text='wait a second..')
+                d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
+                d.start()
+            elif message.lower() == 'menu':
+                bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup_2)
             else:
-                bot.sendMessage(chat_id=chat_id, text=helptext,
-                                reply_markup=reply_markup)
+                bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup_2)
     return update_id
 
 
 def send_song(bot, chat_id, song_id):
     song = get_song(song_id)
     if not song:
-        bot.sendMessage(chat_id=chat_id,
-                        text='please, update songlist')
+        bot.sendMessage(chat_id=chat_id, text='Song isn\'t available')
     else:
         bot.sendAudio(chat_id=chat_id, audio=song)
         song_name = song.name
@@ -118,41 +106,54 @@ def get_songlist():
             songs = pickle.load(f)
         for i, song in enumerate(songs):
             songlist += '{}: {}\n'.format(i + 1, song[0].encode('utf-8'))
-        songlist += '\nIf you want to listen - type the number of the song'
         return songlist
     except IOError:
         return None
 
 
-def update_song_list():
+def update_song_list(audio_place):
     ''' Обновляет список и загружает его на диск. '''
-
-    urls, titles, offset = [], [], 0
-    fresh = True
-    while fresh:
-        response = requests.get('https://api.vk.com/method/wall.get',
+    if audio_place == "songlist":
+        urls, titles, offset = [], [], 0
+        fresh = True
+        while fresh:
+            response = requests.get('https://api.vk.com/method/wall.get',
+                                    params={
+                                        'domain': domain,
+                                        'count': 50,
+                                        'offset': offset,
+                                        'access_token': vk_api_token
+                                    })
+            offset += 50
+            for post in response.json()['response']:
+                try:
+                    counter = collections.Counter()
+                    for attachment in post['attachments']:
+                        counter[attachment['type']] += 1
+                        if attachment['type'] == 'audio':
+                            audio = attachment['audio']
+                    if counter['audio'] == 1:
+                        if len(urls) == default_songs_count:
+                            fresh = False
+                            break
+                        urls.append(audio['url'])
+                        titles.append(audio['artist'] + ' - ' + audio['title'])
+                        # print('{} songs are collect.'.format(len(urls)), end='\r')
+                except (TypeError, AttributeError) as e:
+                    pass
+    elif audio_place == "my":
+        urls, titles, offset = [], [], 0
+        fresh = True
+        response = requests.get('https://api.vk.com/method/audio.get',
                                 params={
-                                    'domain': domain,
-                                    'count': 50,
-                                    'offset': offset
+                                    'owner_id': vk_user_id,
+                                    'count': 20,
+                                    'offset': offset,
+                                    'access_token': vk_api_token
                                 })
-        offset += 50
-        for post in response.json()['response']:
-            try:
-                counter = collections.Counter()
-                for attachment in post['attachments']:
-                    counter[attachment['type']] += 1
-                    if attachment['type'] == 'audio':
-                        audio = attachment['audio']
-                if counter['audio'] == 1:
-                    if len(urls) == default_songs_count:
-                        fresh = False
-                        break
-                    urls.append(audio['url'])
-                    titles.append(audio['artist'] + ' - ' + audio['title'])
-                    # print('{} songs are collect.'.format(len(urls)), end='\r')
-            except (TypeError, AttributeError) as e:
-                pass
+        for audio in response.json()["response"][1:]:
+            urls.append(audio['url'])
+            titles.append(audio['artist'] + ' - ' + audio['title'])
     songs = zip(titles, urls)
     with open('songlist.pkl', 'wb') as f:
         pickle.dump(songs, f)
