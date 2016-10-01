@@ -80,7 +80,8 @@ def echo(bot, update_id):
             elif message.lower() == 'menu':
                 bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup_2)
             else:
-                bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup_2)
+                update_song_list("search", message.lower())
+                bot.sendMessage(chat_id=chat_id, text=get_songlist(), reply_markup=reply_markup_1)
     return update_id
 
 
@@ -109,7 +110,7 @@ def get_songlist():
         return None
 
 
-def update_song_list(audio_place):
+def update_song_list(audio_place, query):
     ''' Обновляет список и загружает его на диск. '''
     if audio_place == "songlist":
         urls, titles, offset = [], [], 0
@@ -141,10 +142,24 @@ def update_song_list(audio_place):
                     pass
     elif audio_place == "my":
         urls, titles, offset = [], [], 0
-        fresh = True
         response = requests.get('https://api.vk.com/method/audio.get',
                                 params={
                                     'owner_id': vk_user_id,
+                                    'count': 20,
+                                    'offset': offset,
+                                    'access_token': vk_api_token
+                                })
+        for audio in response.json()["response"][1:]:
+            urls.append(audio['url'])
+            titles.append(audio['artist'] + ' - ' + audio['title'])
+    elif audio_place == "search":
+        urls, titles, offset = [], [], 0
+        response = requests.get('https://api.vk.com/method/audio.search',
+                                params={
+                                    'q': query,
+                                    'auto_complete': 1,
+                                    'sort': 2,
+                                    'search_own': 1,
                                     'count': 20,
                                     'offset': offset,
                                     'access_token': vk_api_token
