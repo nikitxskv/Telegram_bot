@@ -12,10 +12,8 @@ import collections
 from time import sleep
 from urllib2 import URLError
 from os import remove, renames
+from my_settings import vk_api_token, vk_user_id, telegram_api_token
 from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
-
-vk_api_token = "53925a1a142a9c226aa5e497c86a3043d6583d1fb649ca8b4adf8686fc31fd7788462f747368a63878a1e"
-vk_user_id = 8348483
 
 helptext = 'help:\n\'songlist\' - show new songs'
 
@@ -33,7 +31,7 @@ offset = {}
 
 def main():
     # Telegram Bot Authorization Token
-    bot = telegram.Bot('129258075:AAFa3R8w_HiXAPVwczN3p8EgtrZjfIGBjIY')
+    bot = telegram.Bot(telegram_api_token)
 
     # get the first pending update_id, this is so we can skip over it in case
     # we get an "Unauthorized" exception.
