@@ -171,6 +171,7 @@ def update_song_list(audio_place, query='famous'):
             titles.append(audio['artist'] + ' - ' + audio['title'])
     # if  titles:
     songs = zip(titles, urls)
+    print songs
     # else:
     #     songs = zip(["No results"], [""])
     with open('songlist.pkl', 'wb') as f:
