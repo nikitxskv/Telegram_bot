@@ -190,9 +190,7 @@ def get_song(song_index):
             url = songs[song_index - 1][1]
         song_name = wget.download(url)
         song_name = song_name.encode('utf-8')
-        os.rename(song_name, "lol.mp3")
-        song = open("lol.mp3")
-        # song = open(song_name)
+        song = open(song_name)
         return song
     except IOError:
         return None
