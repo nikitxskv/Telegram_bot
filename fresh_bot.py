@@ -7,6 +7,7 @@ import pickle
 import logging
 import telegram
 import requests
+import os
 import threading
 import collections
 from time import sleep
