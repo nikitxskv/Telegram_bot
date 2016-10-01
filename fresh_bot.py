@@ -15,14 +15,14 @@ from os import remove, renames
 from my_settings import vk_api_token, vk_user_id, telegram_api_token
 from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
-helptext = 'help:\n\'songlist\' - show new songs'
+helptext = 'help:\n\'Songlist\' - show new songs, \n\'My\' - show my songs\nAlso you can type the title of song for search.'
 
 reply_markup_1 = telegram.ReplyKeyboardMarkup([['Menu', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
                                              ['9', '10', '11', '12', '13', '14'],
-                                             ['15', '16', '17', '18', '19', '20']])
+                                             ['15', '16', '17', '18', '19', '20']], resize_keyboard=True)
 
-reply_markup_2 = telegram.ReplyKeyboardMarkup([['Songlist', 'My', 'Search']])
+reply_markup_2 = telegram.ReplyKeyboardMarkup([['Songlist', 'My']], resize_keyboard=True)
 
 default_songs_count = 20
 domain = 'oamusic'
