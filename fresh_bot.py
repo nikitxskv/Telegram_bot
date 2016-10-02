@@ -81,8 +81,9 @@ def echo(bot, update_id):
                 bot.sendMessage(chat_id=chat_id, text=get_songlist(), reply_markup=reply_markup_1)
             elif message.isdigit() and 0 < int(message) < 21:
                 bot.sendMessage(chat_id=chat_id, text='wait a second..')
-                d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
-                d.start()
+                send_song(bot, chat_id, int(message))
+                # d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
+                # d.start()
             elif message.lower() == 'menu':
                 bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup_2)
             else:
@@ -191,10 +192,16 @@ def get_song(song_index):
     try:
         with open('songlist.pkl', 'rb') as f:
             songs = pickle.load(f)
-            # print songs
-            url = songs[song_index - 1][1]
-        song_name = wget.download(url)
-        song_name = song_name.encode('utf-8')
+            url = songs[song_index - 1][1] 
+            song_name = (songs[song_index - 1][0] + ".mp3").encode('utf-8')
+
+        mp3file = requests.get(url, proxies=proxies)
+        with open(song_name,'wb') as output:
+            output.write(mp3file.content)
+
+        # song_name = wget.download(url)
+        # song_name = song_name.encode('utf-8')
+        
         song = open(song_name)
         return song
     except IOError:
