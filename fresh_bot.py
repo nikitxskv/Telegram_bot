@@ -18,6 +18,11 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 
 helptext = 'help:\n\'Songlist\' - show new songs, \n\'My\' - show my songs\nAlso you can type the title of song for search.'
 
+proxies = {
+  'http': 'http://82.146.37.33:8888',
+  'https': 'http://82.146.37.33:8888',
+}
+
 reply_markup_1 = telegram.ReplyKeyboardMarkup([['Menu', '1', '2'],
                                              ['3', '4', '5', '6', '7', '8'],
                                              ['9', '10', '11', '12', '13', '14'],
@@ -123,7 +128,7 @@ def update_song_list(audio_place, query='famous'):
                                         'count': 50,
                                         'offset': offset,
                                         'access_token': vk_api_token
-                                    })
+                                    }, proxies=proxies)
             offset += 50
             for post in response.json()['response']:
                 try:
@@ -149,7 +154,7 @@ def update_song_list(audio_place, query='famous'):
                                     'count': 20,
                                     'offset': offset,
                                     'access_token': vk_api_token
-                                })
+                                }, proxies=proxies)
         for audio in response.json()["response"][1:]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
@@ -165,7 +170,7 @@ def update_song_list(audio_place, query='famous'):
                                     'offset': offset,
                                     'access_token': vk_api_token,
                                     'v': 3
-                                })
+                                }, proxies=proxies)
         for audio in response.json()["response"][1:]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
