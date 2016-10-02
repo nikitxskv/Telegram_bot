@@ -81,9 +81,9 @@ def echo(bot, update_id):
                 bot.sendMessage(chat_id=chat_id, text=get_songlist(), reply_markup=reply_markup_1)
             elif message.isdigit() and 0 < int(message) < 21:
                 bot.sendMessage(chat_id=chat_id, text='wait a second..')
-                send_song(bot, chat_id, int(message))
-                # d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
-                # d.start()
+                # send_song(bot, chat_id, int(message))
+                d = threading.Thread(target=send_song, args=(bot, chat_id, int(message)))
+                d.start()
             elif message.lower() == 'menu':
                 bot.sendMessage(chat_id=chat_id, text=helptext, reply_markup=reply_markup_2)
             else:
