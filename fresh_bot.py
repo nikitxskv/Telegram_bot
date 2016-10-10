@@ -203,7 +203,7 @@ def get_song(song_index):
 
         if not url:
             print "Url is missing.."
-            response = requests.get('https://api.vk.com/method/audio.get',
+            response = requests.get('http://api.vk.com/method/audio.get',
                                     params={
                                         'audio_ids': aid,
                                         'access_token': vk_api_token
