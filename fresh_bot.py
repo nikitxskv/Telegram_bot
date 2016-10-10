@@ -19,8 +19,10 @@ from requests.exceptions import ReadTimeout, ConnectTimeout, SSLError
 helptext = 'help:\n\'Songlist\' - show new songs, \n\'My\' - show my songs\nAlso you can type the title of song for search.'
 
 proxies = {
-  'http': 'http://82.146.37.33:8888',
-  'https': 'http://82.146.37.33:8888',
+  # 'http': 'http://82.146.37.33:8888',
+  # 'https': 'http://82.146.37.33:8888',
+  'http': 'http://92.38.92.0:4045',
+  'https': 'http://92.38.92.0:4045',
 }
 
 reply_markup_1 = telegram.ReplyKeyboardMarkup([['Menu', '1', '2'],
