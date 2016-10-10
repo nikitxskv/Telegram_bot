@@ -120,7 +120,7 @@ def get_songlist():
 def update_song_list(audio_place, query='famous'):
     ''' Обновляет список и загружает его на диск. '''
     if audio_place == "songlist":
-        urls, titles, offset = [], [], 0
+        urls, titles, offset, ids = [], [], 0, []
         fresh = True
         while fresh:
             response = requests.get('https://api.vk.com/method/wall.get',
@@ -129,7 +129,7 @@ def update_song_list(audio_place, query='famous'):
                                         'count': 50,
                                         'offset': offset,
                                         'access_token': vk_api_token
-                                    }, proxies=proxies)
+                                    })
             offset += 50
             for post in response.json()['response']:
                 try:
@@ -144,23 +144,25 @@ def update_song_list(audio_place, query='famous'):
                             break
                         urls.append(audio['url'])
                         titles.append(audio['artist'] + ' - ' + audio['title'])
+                        ids.append(audio['aid'])
                         # print('{} songs are collect.'.format(len(urls)), end='\r')
                 except (TypeError, AttributeError) as e:
                     pass
     elif audio_place == "my":
-        urls, titles, offset = [], [], 0
+        urls, titles, offset, ids = [], [], 0, []
         response = requests.get('https://api.vk.com/method/audio.get',
                                 params={
                                     'owner_id': vk_user_id,
                                     'count': 20,
                                     'offset': offset,
                                     'access_token': vk_api_token
-                                }, proxies=proxies)
-        for audio in response.json()["response"][1:]:
+                                })
+        for audio in response.json()["response"]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
+            ids.append(audio['aid'])
     elif audio_place == "search":
-        urls, titles, offset = [], [], 0
+        urls, titles, offset, ids = [], [], 0, []
         response = requests.get('https://api.vk.com/method/audio.search',
                                 params={
                                     'q': query,
@@ -171,12 +173,13 @@ def update_song_list(audio_place, query='famous'):
                                     'offset': offset,
                                     'access_token': vk_api_token,
                                     'v': 3
-                                }, proxies=proxies)
-        for audio in response.json()["response"][1:]:
+                                })
+        for audio in response.json()["response"]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
+            ids.append(audio['aid'])
     # if  titles:
-    songs = zip(titles, urls)
+    songs = zip(titles, urls, ids)
     print songs
     # else:
     #     songs = zip(["No results"], [""])
@@ -192,8 +195,17 @@ def get_song(song_index):
     try:
         with open('songlist.pkl', 'rb') as f:
             songs = pickle.load(f)
-            url = songs[song_index - 1][1] 
+            url = songs[song_index - 1][1]
             song_name = (songs[song_index - 1][0] + ".mp3").encode('utf-8')
+            aid = songs[song_index - 1][2]
+
+        if not url:
+            response = requests.get('https://api.vk.com/method/audio.get',
+                                    params={
+                                        'audio_ids': aid,
+                                        'access_token': vk_api_token
+                                    }, proxies=proxies)
+            url = response.json()["response"][0]["url"]
 
         mp3file = requests.get(url, proxies=proxies)
         with open(song_name,'wb') as output:
