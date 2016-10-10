@@ -21,8 +21,8 @@ helptext = 'help:\n\'Songlist\' - show new songs, \n\'My\' - show my songs\nAlso
 proxies = {
   # 'http': 'http://82.146.37.33:8888',
   # 'https': 'http://82.146.37.33:8888',
-  'http': 'http://46.8.255.182:8080',
-  'https': 'http://46.8.255.182:8080',
+  'http': 'http://190.121.231.114:8080',
+  'https': 'http://190.121.231.114:8080',
 }
 
 reply_markup_1 = telegram.ReplyKeyboardMarkup([['Menu', '1', '2'],
