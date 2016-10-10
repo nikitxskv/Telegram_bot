@@ -157,7 +157,7 @@ def update_song_list(audio_place, query='famous'):
                                     'offset': offset,
                                     'access_token': vk_api_token
                                 })
-        for audio in response.json()["response"]:
+        for audio in response.json()["response"][1:]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
             ids.append(audio['aid'])
@@ -174,7 +174,7 @@ def update_song_list(audio_place, query='famous'):
                                     'access_token': vk_api_token,
                                     'v': 3
                                 })
-        for audio in response.json()["response"]:
+        for audio in response.json()["response"][1:]:
             urls.append(audio['url'])
             titles.append(audio['artist'] + ' - ' + audio['title'])
             ids.append(audio['aid'])
