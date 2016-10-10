@@ -208,6 +208,7 @@ def get_song(song_index):
                                         'audio_ids': aid,
                                         'access_token': vk_api_token
                                     }, proxies=proxies)
+            print response.text
             url = response.json()["response"][0]["url"]
             print "Get url:", url
             mp3file = requests.get(url, proxies=proxies)
