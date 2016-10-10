@@ -21,8 +21,8 @@ helptext = 'help:\n\'Songlist\' - show new songs, \n\'My\' - show my songs\nAlso
 proxies = {
   # 'http': 'http://82.146.37.33:8888',
   # 'https': 'http://82.146.37.33:8888',
-  'http': 'http://178.208.255.123:3128',
-  'https': 'http://178.208.255.123:3128',
+  'http': 'http://46.8.255.182:8080',
+  'https': 'http://46.8.255.182:8080',
 }
 
 reply_markup_1 = telegram.ReplyKeyboardMarkup([['Menu', '1', '2'],
@@ -203,7 +203,7 @@ def get_song(song_index):
 
         if not url:
             print "Url is missing.."
-            response = requests.get('http://api.vk.com/method/audio.get',
+            response = requests.get('https://api.vk.com/method/audio.get',
                                     params={
                                         'audio_ids': aid,
                                         'access_token': vk_api_token
