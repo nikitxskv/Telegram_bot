@@ -200,14 +200,17 @@ def get_song(song_index):
             aid = songs[song_index - 1][2]
 
         if not url:
+            print "Url is missing.."
             response = requests.get('https://api.vk.com/method/audio.get',
                                     params={
                                         'audio_ids': aid,
                                         'access_token': vk_api_token
                                     }, proxies=proxies)
             url = response.json()["response"][0]["url"]
-
-        mp3file = requests.get(url, proxies=proxies)
+            print "Get url:", url
+            mp3file = requests.get(url, proxies=proxies)
+        else:
+            mp3file = requests.get(url)
         with open(song_name,'wb') as output:
             output.write(mp3file.content)
 
